@@ -28,6 +28,7 @@ import {
 import { buildDiffEditorHideUnchangedOptions } from './diff-editor-hide-unchanged-options'
 import { useDiffEditorRegistration } from './diff-navigation-context'
 import { preserveDiffViewStateAcrossModelSwaps } from './diff-model-swap-view-state'
+import { keepDiffEditorViewportTokenized } from './diff-editor-viewport-tokenization'
 import { monacoFindOptions } from './monaco-find-options'
 import { usePluginSyntaxLanguage } from './use-plugin-syntax-language'
 import {
@@ -245,6 +246,7 @@ export default function DiffViewer({
         setModifiedEditor(null)
       })
       diffEditor.onDidDispose(preserveDiffViewStateAcrossModelSwaps(diffEditor).dispose)
+      modifiedEditor.onDidDispose(keepDiffEditorViewportTokenized(diffEditor).dispose)
 
       setupCopy(originalEditor, monaco, filePath, propsRef)
       setupCopy(modifiedEditor, monaco, filePath, propsRef)

@@ -4,7 +4,13 @@ import { useEffect, useRef, type ComponentProps } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DiffSectionBody } from './DiffSectionBody'
 
-const { mountedEditors, syncWordWrap, cleanupShiftWheel, createEditor } = vi.hoisted(() => {
+const {
+  mountedEditors,
+  syncWordWrap,
+  cleanupShiftWheel,
+  disposeViewportTokenization,
+  createEditor
+} = vi.hoisted(() => {
   function createEditor() {
     const listeners = new Set<() => void>()
     const modified = {
@@ -27,6 +33,7 @@ const { mountedEditors, syncWordWrap, cleanupShiftWheel, createEditor } = vi.hoi
     mountedEditors,
     syncWordWrap: vi.fn(() => ({ dispose: vi.fn() })),
     cleanupShiftWheel: vi.fn(),
+    disposeViewportTokenization: vi.fn(),
     createEditor
   }
 })
@@ -62,6 +69,9 @@ vi.mock('./diff-editor-word-wrap-options', () => ({
 }))
 vi.mock('./diff-editor-shift-wheel-scroll', () => ({
   installDiffEditorShiftWheelScroll: () => cleanupShiftWheel
+}))
+vi.mock('./diff-editor-viewport-tokenization', () => ({
+  keepDiffEditorViewportTokenized: () => ({ dispose: disposeViewportTokenization })
 }))
 vi.mock('@/i18n/i18n', () => ({ translate: (_key: string, fallback: string) => fallback }))
 
@@ -100,6 +110,7 @@ beforeEach(() => {
   mountedEditors.length = 0
   syncWordWrap.mockClear()
   cleanupShiftWheel.mockClear()
+  disposeViewportTokenization.mockClear()
   frames.clear()
   let nextFrame = 1
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
@@ -136,6 +147,7 @@ describe('combined diff word-wrap lifecycle', () => {
     expect(frames.size).toBe(0)
     expect(syncWordWrap).not.toHaveBeenCalled()
     expect(cleanupShiftWheel).toHaveBeenCalledOnce()
+    expect(disposeViewportTokenization).toHaveBeenCalledOnce()
   })
 
   it('disposes synchronization and ignores preference changes while the editor is absent', async () => {

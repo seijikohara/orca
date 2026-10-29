@@ -39,7 +39,7 @@ const fixture = vi.hoisted(() => {
     scrollToDiffCommentId: null,
     setScrollToDiffCommentId: vi.fn()
   }
-  return { createEditor, editors, state }
+  return { createEditor, editors, state, disposeViewportTokenization: vi.fn() }
 })
 
 vi.mock('@monaco-editor/react', () => ({
@@ -92,6 +92,9 @@ vi.mock('./diff-editor-word-wrap-options', () => ({
 }))
 vi.mock('./diff-model-swap-view-state', () => ({
   preserveDiffViewStateAcrossModelSwaps: () => ({ dispose: vi.fn() })
+}))
+vi.mock('./diff-editor-viewport-tokenization', () => ({
+  keepDiffEditorViewportTokenized: () => ({ dispose: fixture.disposeViewportTokenization })
 }))
 vi.mock('./editor-shortcuts', () => ({ installMonacoDiffChangeNavigationShortcut: () => vi.fn() }))
 vi.mock('./LargeDiffFallback', () => ({ LargeDiffFallback: () => <div>Large diff</div> }))
@@ -151,5 +154,6 @@ describe('file diff word-wrap lifecycle', () => {
       true
     )
     expect(mounted?.disposeUpdate).toHaveBeenCalledOnce()
+    expect(fixture.disposeViewportTokenization).toHaveBeenCalledOnce()
   })
 })
